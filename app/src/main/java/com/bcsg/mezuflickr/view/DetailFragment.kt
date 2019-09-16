@@ -6,6 +6,7 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 
@@ -19,6 +20,7 @@ import com.bcsg.mezuflickr.viewModel.DetailViewModel
 import kotlinx.android.synthetic.main.fragment_detail.*
 import kotlinx.android.synthetic.main.fragment_list.*
 import kotlinx.android.synthetic.main.fragment_list.loadingView
+import kotlinx.android.synthetic.main.item_photo.*
 import kotlinx.android.synthetic.main.item_photo.view.*
 
 /**
@@ -34,6 +36,7 @@ class DetailFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View? {
         // Inflate the layout for this fragment
+        (activity as AppCompatActivity).supportActionBar?.title =  "Detail"
         return inflater.inflate(R.layout.fragment_detail, container, false)
     }
 
@@ -51,6 +54,8 @@ class DetailFragment : Fragment() {
         photo?.let {
             viewModel.fetchData(it.id!!)
         }
+
+        photoImage.loadImage(photo.imageUrl, getProgressDrawable(photoImage.context))
     }
 
     fun observeViewModel() {
@@ -85,7 +90,7 @@ class DetailFragment : Fragment() {
 
     fun render(photoInfo: PhotoInfo) {
 
-        photoImage.loadImage(photo.imageUrl, getProgressDrawable(photoImage.context))
+
 
         photoInfo?.let {_photoInfo ->
 

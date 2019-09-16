@@ -39,6 +39,7 @@ class ListViewModel: ViewModel() {
                         photos.value = responsePhoto.photos?.photo
                         page++
                         loading.value = false
+                        photosLoadError.value = false
                     }
 
                     override fun onError(e: Throwable) {

@@ -9,6 +9,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.AbsListView
 import android.widget.LinearLayout
+import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelProviders
@@ -19,6 +20,7 @@ import com.bcsg.mezuflickr.R
 import com.bcsg.mezuflickr.view.adapter.PhotoListAdapter
 import com.bcsg.mezuflickr.viewModel.ListViewModel
 import kotlinx.android.synthetic.main.fragment_list.*
+import kotlinx.android.synthetic.main.item_photo.*
 
 /**
  * A simple [Fragment] subclass.
@@ -26,7 +28,7 @@ import kotlinx.android.synthetic.main.fragment_list.*
 class ListFragment : Fragment() {
 
     private lateinit var viewModel: ListViewModel
-    private val photosListAdapter = PhotoListAdapter(arrayListOf())
+    private var photosListAdapter = PhotoListAdapter(arrayListOf())
 
     private lateinit var linearLayoutManager: LinearLayoutManager
 
@@ -41,39 +43,39 @@ class ListFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View? {
         // Inflate the layout for this fragment
+        (activity as AppCompatActivity).supportActionBar?.title =  "Public Photos"
         return inflater.inflate(R.layout.fragment_list, container, false)
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+
+
+
         viewModel = ViewModelProviders.of(this).get(ListViewModel::class.java)
-        linearLayoutManager = LinearLayoutManager(photosList.context)
 
-        photosList.apply {
-            layoutManager = linearLayoutManager
-            adapter = photosListAdapter
-        }
-
-        setRecyclerViewScrollListener()
-
-
-        refreshLayout.setOnRefreshListener {
-            photosList.visibility = View.GONE
-            listError.visibility = View.GONE
-            loadingView.visibility = View.VISIBLE
-            viewModel.refresh()
-            refreshLayout.isRefreshing = false
-        }
+        setRecyclerView()
 
         observeViewModel()
 
-        if (viewModel.page == 1) {
+        setRefreshLayout()
+
+        if (viewModel.page == 1)
             viewModel.refresh()
-        }
 
         photosList.refreshDrawableState()
+        photosList.visibility = View.VISIBLE
+    }
 
+    private fun setRecyclerView(){
+
+        photosListAdapter = PhotoListAdapter(arrayListOf())
+        linearLayoutManager = LinearLayoutManager(context)
+        photosList.layoutManager = linearLayoutManager
+        photosList.adapter = photosListAdapter
+
+        setRecyclerViewScrollListener()
     }
 
     private fun setRecyclerViewScrollListener() {
@@ -89,13 +91,26 @@ class ListFragment : Fragment() {
         photosList.addOnScrollListener(scrollListener)
     }
 
+    private fun setRefreshLayout() {
+        refreshLayout.setOnRefreshListener {
+            photosList.visibility = View.VISIBLE
+            listError.visibility = View.GONE
+            loadingView.visibility = View.VISIBLE
+
+            setRecyclerView()
+            viewModel.page = 1
+            viewModel.refresh()
+
+            refreshLayout.isRefreshing = false
+        }
+    }
+
     fun observeViewModel() {
 
         viewModel.photos.observe(this, Observer {photos ->
             photos?.let {
-                photosListAdapter.updatePhotosList(photos)
                 photosList.visibility = View.VISIBLE
-                loadingView.visibility = View.GONE
+                photosListAdapter.updatePhotosList(photos)
             }
         })
 
